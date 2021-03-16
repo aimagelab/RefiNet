@@ -13,8 +13,8 @@ from src.Datasets.ITOP import ITOP
 
 # Import Model
 from src.models.refinement import LinearModel
-from src.models.refine_patch_2d import Patch_2D_Model_V1, Patch_2D_Model_V3
-from src.models.pointnet import PointPatch_channel, PointPatch_batch
+from src.models.refine_patch_2d import Patch_2D_Model
+from src.models.pointnet import PointPatch
 from src.models.module_utilizer import ModuleUtilizer
 
 # Import Utils
