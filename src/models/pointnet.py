@@ -129,7 +129,7 @@ class PointNetFeat(nn.Module):
 class PointPatch(nn.Module):
     """Pointnet full network, used with per-batch stacked pointclouds"""
     def __init__(self, global_feat=True, feature_transform=True, dropout_prob=0.2):
-        super(PointPatch_batch, self).__init__()
+        super(PointPatch, self).__init__()
         self.global_feat = global_feat
         self.feature_transform = feature_transform
         self.dropout_prob = dropout_prob
