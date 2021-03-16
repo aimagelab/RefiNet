@@ -1,0 +1,54 @@
+{
+    "name": "BodyPose Refinment with Depth patches",
+    "dataset": "ITOP",
+    "side": "side",
+    "task": "Pose Estimation",
+    "project_dir": "/path/to/BodyPoseRefine",
+    "train_dir": "/path/to/itop",
+    "epochs": 30,
+    "data": {
+      "type": "depth",
+      "from_gt": true,
+      "patch_dim": 40,
+      "batch_size": 64,
+      "input_size": [40, 40],
+      "output_size": [15, 2],
+      "image_size": [240, 320],
+      "num_keypoints": 15,
+      "kpts_type": "2D",
+      "kpts_path": "/path/to/kpts_to_load_train.pkl",
+      "kpts_path_test": "/path/to/kpts_to_load_test.pkl",
+      "result_dir": "./result"
+    },
+    "metrics": {
+      "sigmas": 0.107,
+      "gt_type": "plain",
+      "kpts_type": "2D",
+      "dist_thresh": 100
+    },
+    "data_aug": {
+      "mu": 0,
+      "sigma": 5
+    },
+    "checkpoints": {
+      "best": true,
+      "save_name": "train_depth",
+      "save_dir": "./checkpoints/depth/itop",
+      "save_iters": 30,
+      "tb_path": "train_log/itop"
+    },
+    "solver": {
+      "type": "Adam",
+      "workers": 4,
+      "weight_decay": 0.0001,
+      "decay_steps": [10, 20],
+      "base_lr": 0.001
+    },
+    "network":{
+      "model_name": "V1",
+      "residual": true,
+      "dropout" : true,
+      "batch_norm": true,
+      "activation": "relu"
+    }
+}

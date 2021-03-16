@@ -1,0 +1,55 @@
+{
+    "name": "BodyPose Refinment with Pcloud patches",
+    "dataset": "ITOP",
+    "side": "side",
+    "task": "Pose Estimation",
+    "project_dir": "/path/to/BodyPoseRefine",
+    "train_dir": "/path/to/itop",
+    "save_img": false,
+    "epochs": 50,
+    "data": {
+      "type": "pcloud",
+      "from_gt": true,
+      "pcloud_dim": 300,
+      "batch_size": 8,
+      "input_size": [15, 3],
+      "output_size": [15, 3],
+      "num_keypoints": 15,
+      "kpts_path": "/path/to/kpts_to_load_train.pkl",
+      "kpts_path_test": "/path/to/kpts_to_load_test.pkl",
+      "kpts_type": "3D",
+      "result_dir": "./result"
+    },
+    "metrics": {
+      "sigmas": 0.107,
+      "kpts_type": "3D",
+      "gt_type": "plain",
+      "dist_thresh": 100
+    },
+    "data_aug": {
+      "mu": 0,
+      "sigma": 42
+    },
+    "checkpoints": {
+      "best": true,
+      "save_name": "train_pcloud",
+      "save_dir": "./checkpoints/pcloud/itop",
+      "save_iters": 30,
+      "tb_path": "./train_log/itop"
+    },
+    "solver": {
+      "type": "Adam",
+      "workers": 4,
+      "weight_decay": 0.0001,
+      "decay_steps": [20, 40],
+      "base_lr": 0.001
+    },
+    "network":{
+      "model_name": "V2",
+      "linear_size": 1024,
+      "residual": true,
+      "dropout" : true,
+      "batch_norm": true,
+      "activation": "relu"
+    }
+}

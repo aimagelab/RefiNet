@@ -1,0 +1,60 @@
+{
+    "name": "BodyPose Refinement Base",
+    "dataset": "Baracca",
+    "side": "side",
+    "task": "Pose Estimation",
+    "project_dir": "/path/to/BodyPoseRefine",
+    "train_dir": "/path/to/baracca",
+    "save_img": true,
+    "offset": true,
+    "epochs": 100,
+    "data": {
+      "type": "base",
+      "kpts_type": "3D",
+      "patch_dim": 40,
+      "from_gt": false,
+      "kpts_path_test": "/path/to/kpts_to_load.pkl",
+      "batch_size": 64,
+      "input_size": [15, 3],
+      "output_size": [15, 3],
+      "image_size": [240, 320],
+      "num_keypoints": 15,
+      "result_dir": "./result"
+    },
+    "metrics": {
+      "sigmas": 0.107,
+      "gt_type": "plain",
+      "kpts_type": "3D",
+      "dist_thresh": 100
+    },
+    "data_aug": {
+      "mu": 0,
+      "sigma": 50,
+      "factor": 10
+    },
+    "checkpoints": {
+      "best": true,
+      "save_name": "base",
+      "save_dir": "./checkpoints/vitruvian/baracca",
+      "save_iters": 30,
+      "tb_path": "train_log/baracca"
+    },
+    "solver": {
+      "type": "Adam",
+      "workers": 4,
+      "weight_decay": 0.0001,
+      "decay_steps": [50, 75],
+      "base_lr": 0.001
+    },
+    "network":{
+      "alpha": 0.1,
+      "beta": 1,
+      "gamma": 1,
+      "model_name": "V1",
+      "linear_size": 1024,
+      "residual": true,
+      "dropout" : true,
+      "batch_norm": true,
+      "activation": "relu"
+    }
+}
