@@ -58,10 +58,6 @@ class Configer(object):
         else:
             return self.get(item)
 
-    def __getattr__(self, item):
-        """Get attr function, same for the get[item]"""
-        return self.get(item)
-
     def __str__(self):
         """To string function for the whole configuration state"""
         out = ""
