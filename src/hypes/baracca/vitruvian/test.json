@@ -50,7 +50,6 @@
       "alpha": 0.1,
       "beta": 1,
       "gamma": 1,
-      "model_name": "V1",
       "linear_size": 1024,
       "residual": true,
       "dropout" : true,

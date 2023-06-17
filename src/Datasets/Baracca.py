@@ -83,33 +83,39 @@ class Baracca:
         #ToDO setup training procedure on this dataset
         self.type = self.configer.get("data", "type")
 
-        if self.configer["data", "kpts_path_test"].find(".npz") >= 0:
-            skeleton = np.load(self.configer["data", "kpts_path_test"])["arr_0"]
-            self.kpts = np.reshape(skeleton, (np.prod(skeleton.shape[:-2]), skeleton.shape[-2], skeleton.shape[-1]))
-        else:
-            skeleton = np.load(self.configer["data", "kpts_path_test"], allow_pickle=True)
-            self.kpts = np.zeros((2400, 15, 3), dtype=np.float32)
-
         with open("{}/viewpoints.json".format(self.configer["train_dir"]), "r") as infile:
             self.pos = json.load(infile)
 
-        self.visible = np.ones((np.prod(skeleton.shape[:-2]), skeleton.shape[-2]))
+        self.num_subj = 30
+        self.num_views = 8
+        self.num_imgs = 10
+        self.num_kpts = 15
+        self.num_axes = 3
+
+        assert len(POSE_TO_ITOP) == self.num_kpts
+
+        self.kpts = np.zeros((self.num_subj * self.num_views * self.num_imgs, self.num_kpts, self.num_axes), dtype=np.float32)
+        self.visible = np.ones((self.num_subj * self.num_views * self.num_imgs, self.num_kpts), dtype=bool)
+
         if self.split == "test":
             self.imgs_path = list()
-            for i in range(1, 31):
-                for j in range(8):
-                    for k in range(10):
+            self.skeletons = list()
+            for i in range(1, self.num_subj + 1):
+                for j in range(self.num_views):
+                    for k in range(self.num_imgs):
                         subj = str(i).zfill(3)
                         seq = str(j).zfill(3)
                         n = str(k).zfill(3)
                         self.imgs_path.append(os.path.join(self.data_path, subj, seq, f"imgDepth_{subj}_{seq}_{n}.png"))
+                        skel_data = np.load(os.path.join(self.data_path, subj, seq, f"hrnet_w48_384x288_with_yolo.pkl"), allow_pickle=True)['IR']
+                        self.skeletons.append(skel_data)
             if self.type.lower() == "depth":
                 pass
             elif self.type.lower() in ("base", "pcloud"):
                 for i, path in enumerate(self.imgs_path):
                     img = cv2.imread(path, 2)
-                    kpt = skeleton.copy()
-                    for num, el in enumerate(kpt[i]):
+                    kpt = self.skeletons[i][path[len(self.data_path)+1:].replace('Depth', 'IR')][0].copy()
+                    for num, el in enumerate(kpt):
                         if (el[0] < 0 or el[1] < 0) or (el[0] == 0 and el[1] == 0):
                             x, y, z = 0, 0, 0
                         else:
@@ -123,7 +129,7 @@ class Baracca:
                         seq = int(self.imgs_path[i].split("/")[-2])
                         self.kpts[i, num] = zaxis_to_world(x, y, z, int(self.pos[str(seq)]['orientation'][0]))
                         if z == 0:
-                            self.visible[i, num] = 0
+                            self.visible[i, num] = False
             else:
                 raise NotImplementedError('Data type not supported: {}'.format(self.type))
         self.size = self.kpts.shape[0]
@@ -132,9 +138,9 @@ class Baracca:
         return self.size
 
     def __getitem__(self, idx):
-        if self.kpts.shape[1] > 15:
-            kpt_in = np.zeros((15, 3), dtype=np.float32)
-            visible = np.zeros((15), dtype=np.float32)
+        if self.kpts.shape[1] > self.num_kpts:
+            kpt_in = np.zeros((self.num_kpts, self.num_axes), dtype=np.float32)
+            visible = np.zeros((self.num_kpts), dtype=bool)
             for i, el in enumerate(POSE_TO_ITOP):
                 kpt_in[i] = self.kpts[idx][el]
                 visible[i] = self.visible[idx][el]
@@ -144,7 +150,7 @@ class Baracca:
 
         if self.type.lower() == "depth":
             patch_dim = self.configer.get("data", "patch_dim") // 2
-            patches = np.zeros((15, patch_dim * 2, patch_dim * 2), np.float32)
+            patches = np.zeros((self.num_kpts, patch_dim * 2, patch_dim * 2), np.float32)
             img = cv2.imread(self.imgs_path[idx], 2)
 
             for i, el in enumerate(kpt_in):
@@ -176,11 +182,11 @@ class Baracca:
                 N = 5000
             else:
                 N = 2000
-            kpts = np.zeros((15, N + 1, 3), dtype=np.float32)
+            kpts = np.zeros((self.num_kpts, N + 1, self.num_axes), dtype=np.float32)
             for i, el in enumerate(kpt_in):
-                if visible[i] == 0 or el[2] == 0:
+                if not visible[i] or el[2] == 0:
                     continue
-                tmp2 = np.zeros((16, 3))
+                tmp2 = np.zeros((16, self.num_axes))
                 pcloud_dim_tmp = pcloud_dim
                 while tmp2.shape[0] <= 128 and pcloud_dim_tmp <= 450:
                     tmp2 = data[

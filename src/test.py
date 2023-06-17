@@ -94,30 +94,21 @@ class PoseTest(object):
 
         if self.type == "base":
             # Linear model for base type
-            self.net = LinearModel(self.input_size[0] * self.input_size[1],
-                                   self.output_size[0] * self.output_size[1],
-                                   self.configer.get('network', 'linear_size'),
-                                   self.configer.get('network', 'dropout'),
-                                   self.configer.get('network', 'batch_norm'),
-                                   self.configer.get('network', 'residual'),
-                                   activation)
+            self.net = LinearModel(
+                self.input_size[0] * self.input_size[1],
+                self.output_size[0] * self.output_size[1],
+                self.configer.get('network', 'linear_size'),
+                self.configer.get('network', 'dropout'),
+                self.configer.get('network', 'batch_norm'),
+                self.configer.get('network', 'residual'),
+                activation,
+                self.configer.get('network', 'attention') if self.configer.get('network', 'attention') is not None else False,
+                self.configer.get('network', 'bigskip') if self.configer.get('network', 'bigskip') is not None else False
+            )
         elif self.type == "depth":
-            # 2D Depth patch model, choice based over model_name version
-            if self.configer.get("network", "model_name").lower() == "v1":
-                self.net = Patch_2D_Model_V1(self.configer.get("data", "output_size"), activation)
-            elif self.configer.get("network", "model_name").lower() == "v3":
-                self.net = Patch_2D_Model_V3(self.configer.get("data", "output_size"), activation)
-            else:
-                raise NotImplementedError(
-                    "Model version: {} is not implemented".format(self.configer.get("network", "model_name")))
+            self.net = Patch_2D_Model(self.configer.get("data", "output_size"), activation)
         elif self.type == "pcloud":
-            if self.configer.get("network", "model_name").lower() == "v1":
-                self.net = PointPatch_channel(True, True, 0.2)
-            elif self.configer.get("network", "model_name").lower() == "v2":
-                self.net = PointPatch_batch(True, True, 0.2)
-            else:
-                raise NotImplementedError(
-                    "Model version: {} is not implemented".format(self.configer.get("network", "model_name")))
+            self.net = PointPatch(True, True, 0.2)
         else:
             raise NotImplementedError("Type: {} not implemented yet".format(self.type))
 
